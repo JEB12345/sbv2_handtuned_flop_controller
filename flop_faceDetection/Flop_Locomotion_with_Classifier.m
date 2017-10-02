@@ -118,7 +118,7 @@ transition{8,3} = [9    15 	20 	13 	12];
 
 if ~(exist('Cmd'))
     if ~(exist('HebiLookup'))
-        addpath('/Users/Massimo/Documents/Hebi_motors');
+        addpath('/usr/local/home/jebruce/Projects/Hebi/MATLAB');
         startup;
         SB_Hebi_start;
     else
@@ -168,20 +168,22 @@ pause;
 
 %% Loop Walk
 
-while 1
+notQuit = 1;
+while notQuit
         
     % Set all the motors to the initial state
     cmdMotorPositions = ones(1,24)*motorOffset;
         
     % Selct direction of motion
-    promptMessage = 'Press w to go forward, s to go backward, and t to turn, or q to quit!\n';
+    promptMessage = 'Press w to go forward, s to go backward, t to turn, d to display current face, or q to quit!\n';
     
     inLoop = 1;
     while inLoop
         
         userInput = input(promptMessage, 's');
         if userInput == 'q'
-            break % quit
+            notQuit = 0;
+            break % break first user input loop
         elseif userInput == 'w'
             % Forward
             inLoop = 0;
@@ -194,11 +196,46 @@ while 1
             % Turn
             inLoop = 0;
             direction = 2;
+        elseif userInput == 'd'
+            % FACE!
+            % Figure out on which face we are standing, using the classifier
+            fbk = Group.getNextFeedback();
+            
+            % Quick check to verify that all 24 motors are connected!
+            if nbMotors ~= 24
+                display('Something is wrong with the number of connected motors!')
+                pause()
+            end
+            
+            % Create a new point that needs to be classified
+            for mm = 1:nbMotors
+                newpoint(1, (mm-1)*3 + 1) = fbk.accelX(mm); % Col 1
+                newpoint(1, (mm-1)*3 + 2) = fbk.accelY(mm); % Col 2
+                newpoint(1, (mm-1)*3 + 3) = fbk.accelZ(mm); % Col 3
+            end
+            
+            [n,d] = knnsearch(trainingData,newpoint,'k',10);
+            
+            resultTable = tabulate(labs(n));
+            
+            % Pick the result with the highest percentage
+            [~, maxPos] = max(cell2mat(resultTable(:,3)));
+            faceLabel = resultTable(maxPos, 1);
+            face = str2num(faceLabel{1,1});
+            
+            display('Detected face: ')
+            face
+            
+            clear newpoint resultTable maxVal maxPos fbk;
         else
             display('Wrong key pressed!');
         end
     end
 
+    if ~notQuit
+        break; % quit program
+    end
+    
     clear promptMessage inLoop userInput;
     
     
@@ -260,6 +297,7 @@ end
 
 %% Ending sequence. Bring back the robot to the rest position.
 
+disp('Bringing robot back to zero position before quiting.');
 for j=1:24
     Cmd.position(j) = motorOffset;
     Group.send(Cmd);
