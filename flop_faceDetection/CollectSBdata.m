@@ -71,7 +71,7 @@ for jj = 1:nbTriangles
     end
     
     if jj<nbTriangles
-        display('Turn the motor to the next face and press any key to continue...');
+        display('Turn the robot to the next face and press any key to continue...');
         pause();
     end
 end 
