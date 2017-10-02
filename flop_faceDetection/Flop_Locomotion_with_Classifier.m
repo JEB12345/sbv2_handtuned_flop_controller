@@ -1,5 +1,10 @@
 %% SUPERball V2 Locomotion
-% Version 1.0 - 09/27/2017
+% Version 1.01 - 10/02/2017
+
+% Changelog
+% 1.0 Initial release
+% 1.01 Swapped definitions triangle 7 and 8.
+
 
 % SUPERball V2 Locomotion controller
 % a.k.a.
@@ -35,8 +40,8 @@ load('IMUTrainingData.mat') % Training data
 % Triangle 4:   4   15  22
 % Triangle 5:   13  18  3
 % Triangle 6:   20  7   14
-% Triangle 7:   17  1   9
-% Triangle 8:   8   16  24
+% Triangle 7:   8   16  24
+% Triangle 8:   17  1   9
 
 
 % Actuation scheme
@@ -60,12 +65,12 @@ load('IMUTrainingData.mat') % Training data
 %       6                   20              1
 %       6                   7               8
 %       6                   14              5
-%       7                   17              5
-%       7                   1               3
-%       7                   9               1
-%       8                   8               6
-%       8                   16              4
-%       8                   24              2
+%       7                   8               6
+%       7                   16              4
+%       7                   24              2
+%       8                   17              5
+%       8                   1               3
+%       8                   9               1
 
 %% Face transitions
 
@@ -101,13 +106,13 @@ transition{6,1} = [20   22  6   24  17];
 transition{6,2} = [7    1 	15 	3 	6];
 transition{6,3} = [14   12  17 	10 	15];
 
-transition{7,1} = [17   23 	4 	21 	20];
-transition{7,2} = [1    7 	12 	5 	4];
-transition{7,3} = [9    15 	20 	13 	12];
+transition{7,1} = [8    2 	13 	4 	5];
+transition{7,2} = [16   10 	21 	12 	13];
+transition{7,3} = [24   18 	5 	20 	21];
 
-transition{8,1} = [8    2 	13 	4 	5];
-transition{8,2} = [16   10 	21 	12 	13];
-transition{8,3} = [24   18 	5 	20 	21];
+transition{8,1} = [17   23 	4 	21 	20];
+transition{8,2} = [1    7 	12 	5 	4];
+transition{8,3} = [9    15 	20 	13 	12];
 
 %% Hebi Stuff
 

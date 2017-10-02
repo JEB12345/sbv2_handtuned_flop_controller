@@ -42,8 +42,8 @@ display(nbMotors, ' motor(s) found!');
 % Triangle 4:   4   15  22
 % Triangle 5:   13  18  3
 % Triangle 6:   20  7   14
-% Triangle 7:   17  1   9
-% Triangle 8:   8   16  24
+% Triangle 7:   8   16  24
+% Triangle 8:   17  1   9
 
 Group.setFeedbackFrequency(100); % reduce rate to 5Hz from 100 Hz default
 
