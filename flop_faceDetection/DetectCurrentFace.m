@@ -27,9 +27,8 @@ function [ face ] = DetectCurrentFace( Group )
     faceLabel = resultTable(maxPos, 1);
     face = str2num(faceLabel{1,1});
     
-    display('Detected face: ')
-    face
-    
+    display(['Detected face: ' faceLabel{1,1}]);
+        
     %clear newpoint resultTable maxVal maxPos fbk;
     
 end

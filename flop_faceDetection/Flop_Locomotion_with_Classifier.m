@@ -42,7 +42,7 @@ hebiStuff;
 %% Motor positions and gains for basic flop locomotion
 
 motorPosition = 63;
-motorOffset = 3;
+motorOffset = 1.5;
 
 %% Go to initial position
 
@@ -73,6 +73,7 @@ pause;
 %% Loop Walk
 
 notQuit = 1;
+logging = 0;
 while notQuit
         
     % Set all the motors to the initial state
@@ -80,12 +81,9 @@ while notQuit
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
-
-    display('Detected face: ')
-    currFace
         
     % Select direction of motion
-    promptMessage = 'Press w to go forward, s to go backward, 0:5 for new direction, d to display current face, or q to quit!\n';
+    promptMessage = 'Press w to go forward, s to go backward, 0:5 for new direction, l to start/stop logging, d to display current face, or q to quit!\n';
     
     direction = 0;
     
@@ -106,6 +104,17 @@ while notQuit
                 % Backward
                 inLoop = 0;
                 direction = 3;
+            case 'l'
+                inLoop = 1;
+                if (logging)
+                    modules.stopLogFull('LogFormat', 'mat');
+                    disp('Logging Terminated.');
+                    logging = 0;
+                else
+                    modules.startLog();
+                    disp('Logging Initiated.');
+                    logging = 1;
+                end
             case '0'
                 % Turn
                 inLoop = 0;
@@ -131,8 +140,7 @@ while notQuit
                 inLoop = 0;
                 direction = 5;
             case 'd'
-                display('Current face: ')
-                DetectCurrentFace(Group)
+                DetectCurrentFace(Group);
                 
             otherwise
                 display('Wrong key pressed!');
@@ -147,13 +155,10 @@ while notQuit
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
-
-    display('Detected face: ')
-    currFace
-    
+  
     % Update current loop
-    display('We are on loop number: ');
-    currLoop = CalculateNextLoop(currLoop, currFace, direction)
+    currLoop = CalculateNextLoop(currLoop, currFace, direction);
+    display(['We are on loop number: ' num2str(currLoop)]);
     
     % Update next triangle
     nextTriangle = CalculateNextTriangle(currFace, currLoop);
