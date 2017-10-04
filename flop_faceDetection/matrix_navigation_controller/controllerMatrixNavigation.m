@@ -1,36 +1,66 @@
-clear all
+%% Add path of shared face detection functions
+addpath('../');
 
-% Initialize matrix with the four rings (one per row)
+%% Run CollectSBdata.m first to collect training data.
+
+load('IMUTrainingData.mat') % Training data
+
+%% Load definitions
+
+transitionsDef;
+
+%% Hebi Stuff
+
+hebiStuff;
+
+%% Motor positions and gains for basic flop locomotion
+
+motorPosition = 63;
+motorOffset = 1.5;
+
+%% Go to initial position
+
+% Loop Zeros so not to pull too much current went resetting robot
+Cmd.position = ones(1,24)*NaN;
+for j=1:24
+    Cmd.position(j) = motorOffset;
+    Group.send(Cmd);
+    disp(j);
+    pause(0.5);
+end
+
+clear j;
+
+
+%% Initialize matrix with the four rings (one per row)
 
 M = [3    6   7   4   5   8;
      5    2   7   6   1   8;
      7    2   3   8   1   4;
      1    6   3   2   5   4];
-
-% Initialize matrix with rows of M where each face appears (OPTIMIZATION POSSIBLE)
-
-faceMat = [2    3   4;
-           2    3   4;
-           1    3   4;
-           1    3   4;
-           1    2   4;
-           1    2   4;
-           1    2   3;
-           1    2   3];
-     
+ 
 % Initialize random face where I'm at
-ROWS = 4;
-COLUMNS = 6;
+COLUMNS = size(M,2); 
 
-i = randi(ROWS); %row on the matrix
-j = randi(COLUMNS); % column in the matrix, is also the ring I am at
-j
-% Generate random direction (this direction always refers to the forward
-% direction --> moving in this direction will make the robot go forward)
+% Assume positive direction when starting program
 % 0 --
 % 1 ++
-dir = round(rand);
+dir = 1;
 
+%% Face init
+%% Random definition for initial loop!
+currFace = DetectCurrentFace(Group);
+if (currFace > 2)
+    i = 1;
+else
+    i = 2;
+end
+% Get's the column of the current face
+j = find(M(i,:)' == currFace);
+
+% wait to start walk
+disp('Waiting to start walk. Press any key to continue');
+pause;
 
 while (1)
     cmd = input('Where should I go next?\n FWD = forward \n BKW = backwards \n TLF = turn left forward\n TRF = turn right forward \nTLB = turn left backwards\n TRB = turn right backwards\n','s');    
@@ -178,11 +208,42 @@ while (1)
         otherwise
             fprintf('Wrong command');
     end
-    fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);
+    
+    % Set all the motors to the initial state
+    cmdMotorPositions = ones(1,24)*motorOffset;
+    
+    % Now we can select the motor commands to go to the next face
+    motorCommand = cell2mat(transition(currFace, M(newi,newj)));
+    
+     % We selected these five cables via trial and error
+    cmdMotorPositions(motorCommand(1)) = motorPosition + motorOffset;
+    cmdMotorPositions(motorCommand(2)) = -motorPosition + motorOffset;
+    cmdMotorPositions(motorCommand(3)) = motorPosition + motorOffset;
+    cmdMotorPositions(motorCommand(4)) = motorPosition + motorOffset;
+    cmdMotorPositions(motorCommand(5)) = -motorPosition + motorOffset;
+    
+    % Send new positions to motors
+    Cmd.position = cmdMotorPositions;
+    Group.send(Cmd);
+    
+    display('Press any key to go to the next step')
+    pause
+    
+    disp(['Desired Face: ' num2str(M(newi,newj))]);
+    currFace = DetectCurrentFace(Group);
+    
+    % Bring back the robot to the rest position
+    for j=1:24
+        Cmd.position(j) = motorOffset;
+        Group.send(Cmd);
+    end
+    pause
+    
+%     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);
     i=newi;
     j=newj;
     dir=newDir;
-end;
+end
 
 % Funciton to move backwards on the same ring
 function f=backwards(j,COLUMNS)
