@@ -160,7 +160,7 @@ while notQuit
                 display(['New motor offset = ' num2str(motorOffset)]);
                 
             case 'M' % Increase current motorPosition
-                if motorPpsition < 70;
+                if motorPosition < 70;
                     motorPosition = motorPosition + 1;
                     display(['New motor amplitude = ' num2str(motorPosition)]);
                 else

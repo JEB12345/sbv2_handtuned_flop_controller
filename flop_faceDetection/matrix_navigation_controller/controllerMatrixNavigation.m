@@ -136,7 +136,7 @@ while (1)
                  end
                 [newi,newj]=bigTurnFWD(M,currentFace,compareTerm,dir);
                 newDir = changeDir(dir);
-            elseif (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
+            elseif (mod(M(i,j),2)~=0 && dir==0) || (mod(M(i,j),2)==0 && dir==1)
                 currentFace=M(i,j);
                 % find term that is going to be used to find new ring
                  if dir==0 
@@ -212,6 +212,7 @@ while (1)
     % Set all the motors to the initial state
     cmdMotorPositions = ones(1,24)*motorOffset;
     
+    disp(['Curr Face: ' num2str(currFace) ' next face: ' num2str(M(newi,newj))]);
     % Now we can select the motor commands to go to the next face
     motorCommand = cell2mat(transition(currFace, M(newi,newj)));
     
@@ -243,102 +244,4 @@ while (1)
     i=newi;
     j=newj;
     dir=newDir;
-end
-
-% Funciton to move backwards on the same ring
-function f=backwards(j,COLUMNS)
-    f= mod(j+ COLUMNS-2,COLUMNS)+1;
-end
-
-% Function to move forward on the same ring
-function f=forward(j,COLUMNS)
-    f=mod(j,COLUMNS)+1;
-end
-
-% Function that can be used for optimization (iterate on a smaller matrix)
-function Red = matRedux(M,faceMat,i,j)
-    reduxIndex = M(i,j);
-    count=1;
-    for k=1:3
-        oldIndex= faceMat(reduxIndex,k);
-        if oldIndex~=i
-            Red(count,:)=M(oldIndex,:);
-            count =count+1;
-        end
-    end
-end
-
-%more iterations than necessary, can use reduced matrix for the future but
-%have to transport back indexes.
-function [newi,newj]=smallTurnFWD(M,currentFace,compareTerm,dir)
-    for l=1:4
-        for k=1:6
-            if M(l,k)==currentFace && dir==1 && M(l,backwards(k,6))==compareTerm
-                newi=l;
-                newj=backwards(k,6);
-                return
-            elseif M(l,k)==currentFace && dir==0 && M(l,forward(k,6))==compareTerm
-                newi=l;
-                newj=forward(k,6);
-                return
-            end
-        end
-    end
-end
-
-function [newi,newj]=bigTurnFWD(M,currentFace,compareTerm,dir)
-   for l=1:4
-        for k=1:6
-            if M(l,k)==currentFace && dir==0 && M(l,backwards(k,6))==compareTerm
-                newi=l;
-                newj=forward(k,6);
-                return
-            elseif M(l,k)==currentFace && dir==1 && M(l,forward(k,6))==compareTerm
-                newi=l;
-                newj=backwards(k,6);
-                return
-            end
-        end
-    end 
-end
-
-function [newi,newj]=smallTurnBKW(M,currentFace,compareTerm,dir)
-    for l=1:4
-        for k=1:6
-            if M(l,k)==currentFace && dir==0 && M(l,backwards(k,6))==compareTerm
-                newi=l;
-                newj=backwards(k,6);
-                return
-            elseif M(l,k)==currentFace && dir==1 && M(l,forward(k,6))==compareTerm
-                newi=l;
-                newj=forward(k,6);
-                return
-            end
-        end
-    end
-end
-
-function [newi,newj]=bigTurnBKW(M,currentFace,compareTerm,dir)
-   for l=1:4
-        for k=1:6
-            if M(l,k)==currentFace && dir==1 && M(l,backwards(k,6))==compareTerm
-                newi=l;
-                newj=forward(k,6);
-                return
-            elseif M(l,k)==currentFace && dir==0 && M(l,forward(k,6))==compareTerm
-                newi=l;
-                newj=backwards(k,6);
-                return
-            end
-        end
-    end 
-end
-
-%Function to change direction
-function f=changeDir(dir)
-    if dir==0
-        f=1;
-    elseif dir ==1
-        f=0;
-    end
 end
