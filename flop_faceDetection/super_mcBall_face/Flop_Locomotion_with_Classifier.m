@@ -1,9 +1,10 @@
 %% SUPERball V2 Locomotion
-% Version 1.01 - 10/02/2017
+% Version 2.00 - 10/03/2017
 
 % Changelog
 % 1.0 Initial release
 % 1.01 Swapped definitions triangle 7 and 8.
+% 2.0 Added steering control and enabled data logging.
 
 
 % SUPERball V2 Locomotion controller
@@ -12,10 +13,8 @@
 
 % The program detects the current base triangle and can move SUPERball v2
 % in any of the three directions for each base triangle. Direction of
-% motion is selected by the user, via keyboard:
-% w = "forward"
-% s = "backward"
-% t = "turn" - left or right depending on the face number
+% motion is selected by the user, via keyboard, and depends on the four
+% possible loops of face transitions present on the robot.
 
 % These directions depend on the SUPERball orientation...
 
@@ -25,6 +24,11 @@
 
 % Also add the file IMUTrainingData.mat, or run CollectSBdata.m to generate
 % a new IMUTrainingData.mat file.
+
+%% Add path
+
+addpath('../');
+
 
 %% Run CollectSBdata.m first to collect training data.
 
@@ -57,9 +61,6 @@ end
 
 clear j;
 
-
-% BROKEN!!!!!!!!
-
 %% Random definition for initial loop!
 % Loop 1 passes through faces 1 to 6. For faces 7:8 we just select loop 4.
 currFace = DetectCurrentFace(Group);
@@ -78,13 +79,13 @@ pause;
 notQuit = 1;
 logging = 0;
 while notQuit
-        
+    
     % Set all the motors to the initial state
     cmdMotorPositions = ones(1,24)*motorOffset;
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
-        
+    
     % Select direction of motion
     promptMessage = 'Press w to go forward, s to go backward, 0:5 for new direction, l to start/stop logging, d to display current face, or q to quit!\n';
     
@@ -99,15 +100,16 @@ while notQuit
                 notQuit = 0;
                 display('Goodbye!')
                 break % break first user input loop
-            case 'w'
-                % Forward
+                
+            case 'w' % Forward
                 inLoop = 0;
                 direction = 0;
-            case 's'
-                % Backward
+                
+            case 's' % Backward
                 inLoop = 0;
                 direction = 3;
-            case 'l'
+                
+            case 'l' % Toggle data log
                 inLoop = 1;
                 if (logging)
                     modules.stopLogFull('LogFormat', 'mat');
@@ -118,38 +120,65 @@ while notQuit
                     disp('Logging Initiated.');
                     logging = 1;
                 end
-            case '0'
-                % Turn
+            case '0' % Forward
                 inLoop = 0;
                 direction = 0;
-            case '1'
-                % Turn
+                
+            case '1' % Forward-right
                 inLoop = 0;
                 direction = 1;
-            case '2'
-                % Turn
+                
+            case '2' % Backward-right
                 inLoop = 0;
                 direction = 2;
-            case '3'
-                % Turn
+                
+            case '3' % Backward
                 inLoop = 0;
                 direction = 3;
-            case '4'
-                % Turn
+                
+            case '4' % Backward-left
                 inLoop = 0;
                 direction = 4;
-            case '5'
-                % Turn
+                
+            case '5' % Forward-left
                 inLoop = 0;
                 direction = 5;
-            case 'd'
+                
+            case 'd' % Print current face
                 DetectCurrentFace(Group);
+                
+            case 'O' % Increase current offset
+                if motorOffset < 5;
+                    motorOffset = motorOffset + 0.5;
+                    display(['New motor offset = ' num2str(motorOffset)]);
+                else
+                    display('Motor offset (soft) end-stop reached!');
+                end
+                
+            case 'o' % Decrease current motorOffset
+                motorOffset = motorOffset - 0.5;
+                display(['New motor offset = ' num2str(motorOffset)]);
+                
+            case 'M' % Increase current motorPosition
+                if motorPpsition < 70;
+                    motorPosition = motorPosition + 1;
+                    display(['New motor amplitude = ' num2str(motorPosition)]);
+                else
+                    display('Motor amplitude too large! (Soft) end-stop reached!');
+                end
+                
+            case 'm' % Decrease current offset
+                motorPosition = motorPosition - 0.5;
+                display(['New motor amplitude = ' num2str(motorPosition)]);    
+                
+            case 'r' % reset robot position to offset-only
+                CommandAllMotors(Group, Cmd, motorOffset, 0.5);
                 
             otherwise
                 display('Wrong key pressed!');
         end
     end
-
+    
     if ~notQuit
         break; % quit program
     end
@@ -158,7 +187,7 @@ while notQuit
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
-  
+    
     % Update current loop
     currLoop = CalculateNextLoop(currLoop, currFace, direction);
     display(['We are on loop number: ' num2str(currLoop)]);

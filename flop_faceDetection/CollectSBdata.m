@@ -26,7 +26,7 @@ disp(Group);
 fbk = Group.getNextFeedback();
 display(fbk);
 
-nbMotors = size(fbk.accelX,2); % Crappy way to know how many motors are connected
+nbMotors = Group.getNumModules; % Crappy way to know how many motors are connected
 display(nbMotors, ' motor(s) found!');
 %% Create Training Data
 
