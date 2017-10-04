@@ -57,6 +57,9 @@ end
 
 clear j;
 
+
+% BROKEN!!!!!!!!
+
 %% Random definition for initial loop!
 % Loop 1 passes through faces 1 to 6. For faces 7:8 we just select loop 4.
 currFace = DetectCurrentFace(Group);
