@@ -1,13 +1,13 @@
 function [newi,newj]=bigTurnBKW(M,currentFace,compareTerm,dir)
    for l=1:4
         for k=1:6
-            if M(l,k)==currentFace && dir==1 && M(l,backwards(k,6))==compareTerm
+            if M(l,k)==currentFace && dir==1 && M(l,matrixStepLeft(k,6))==compareTerm
                 newi=l;
-                newj=forward(k,6);
+                newj=matrixStepRight(k,6);
                 return
-            elseif M(l,k)==currentFace && dir==0 && M(l,forward(k,6))==compareTerm
+            elseif M(l,k)==currentFace && dir==0 && M(l,matrixStepRight(k,6))==compareTerm
                 newi=l;
-                newj=backwards(k,6);
+                newj=matrixStepLeft(k,6);
                 return
             end
         end
