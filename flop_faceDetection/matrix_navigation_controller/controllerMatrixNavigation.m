@@ -63,6 +63,7 @@ disp('Waiting to start walk. Press any key to continue');
 pause;
 
 innerLoop = 1;
+quit = 0;
 
 while (1)
     while innerLoop
@@ -216,17 +217,37 @@ while (1)
                     newDir = changeDir(dir);
                 end
                 innerLoop = 0;
-            case 'D'
+            case 'd'
                 disp(['Desired Face: ' num2str(M(newi,newj))]);
                 currFace = DetectCurrentFace(Group);
                 if (M(newi,newj) ~= currFace)
-                    reset = input('Desired and deteced faces do not match');
+                    reset = input('Desired and deteced faces do not match. Should we reset direction [1] or quit [0]?');
+                    if (reset)
+                        currFace = DetectCurrentFace(Group);
+                        if (currFace > 2)
+                            i = 1;
+                        else
+                            i = 2;
+                        end
+                        % Get's the column of the current face
+                        j = find(M(i,:)' == currFace);
+                        innerLoop = 1; 
+                    else
+                        quit = 1;
+                        innerLoop = 0;
+                        break;
+                    end
+                else
                     innerLoop = 1;
                 end
             otherwise
-                fprintf('Wrong command');
+                fprintf('Wrong command! Please try again.');
                 innerLoop = 1;
         end
+    end
+    
+    if quit
+        break; % quit program
     end
     
     % Set all the motors to the initial state
