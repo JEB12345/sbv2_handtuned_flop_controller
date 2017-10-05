@@ -68,60 +68,60 @@ while (1)
     while innerLoop
         disp(['Desired Face: ' num2str(M(newi,newj))]);
         currFace = DetectCurrentFace(Group);
-        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face','s');    
-        switch upper(cmd)
-            case 'F'
-                if dir == 0
+        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face','s');
+        switch lower(cmd)
+            case 'f'
+                if dir== 0
                     newDir=dir;
                     newi=i;
-                    newj= backwards(j,COLUMNS); %iterate backwards 
+                    newj= matrixStepLeft(j,COLUMNS); %iterate one step left int the matris
                     newFace = M(newi,newj);
                 elseif dir ==1
                     newDir=dir;
                     newi=i;
-                    newj=forward(j,COLUMNS); %iterate forward
+                    newj=matrixStepRight(j,COLUMNS); %iterate one step right in the matrix
                     newFace = M(newi,newj);
                 end
                 innerLoop = 0;
-            case 'B'
+            case 'b'
                 if dir == 0
                     newDir=dir;
                     newi=i;
-                    newj=forward(j,COLUMNS); %iterate forward
+                    newj=matrixStepRight(j,COLUMNS); %iterate forward
                     newFace = M(newi,newj);
                 elseif dir == 1
                     newDir=dir;
                     newi=i;
-                    newj= backwards(j,COLUMNS); %iterate backwards 
+                    newj= matrixStepLeft(j,COLUMNS); %iterate one step left in the matrix
                     newFace = M(newi,newj);
                 end
                 innerLoop = 0;
-            case 'LF'
+            case 'lf'
                 % This option allows to change ring so that the robot will tilt
                 % to the left forward. To make it navigate forward or
-                % backwards in this direction use the F or B commands
-
+                % backwards in this direction use the FWD or BKW commands
+                
                 if (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
                     % currentFace is the face where I'm at now
                     currentFace=M(i,j);
                     % find the comparison term that is going to be used to find new ring
-                     if dir == 0 
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     elseif dir == 1
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     end
+                    if dir==0
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    end
                     % Perform a "small turn", next face does not change with
                     % respect to the previous ring but the ring itself changes
                     % to allow the robot to slightly change direction
                     [newi,newj]=smallTurnFWD(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
-
+                    
                 elseif (mod(M(i,j),2)~=0 && dir==0) || (mod(M(i,j),2)==0 && dir==1)
                     currentFace=M(i,j);
-                    if dir == 0 
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     elseif dir == 1
-                         compareTerm = M(i,backwards(j,COLUMNS));
+                    if dir==0
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
                     end
                     % Perform a "big turn", next face changes with
                     % respect to the previous ring and the ring itself changes
@@ -130,88 +130,88 @@ while (1)
                     newDir=changeDir(dir);
                 end
                 innerLoop = 0;
-            case 'RF'
+            case 'rf'
                 % This option allows to change ring so that the robot will tilt
                 % to the right forward. To make it navigate forward or
-                % backwards in this direction use the F or B commands
-
+                % backwards in this direction use the FWD or BKW commands
+                
                 if (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
                     currentFace=M(i,j);
-                    if dir == 0 
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     elseif dir == 1
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     end
+                    if dir==0
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    end
                     [newi,newj]=bigTurnFWD(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
                 elseif (mod(M(i,j),2)~=0 && dir==0) || (mod(M(i,j),2)==0 && dir==1)
                     currentFace=M(i,j);
                     % find term that is going to be used to find new ring
-                     if dir == 0 
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     elseif dir == 1
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     end
+                    if dir==0
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    end
                     [newi,newj]=smallTurnFWD(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
                 end
                 innerLoop = 0;
-            case 'LB'
+            case 'lb'
                 % This option allows to change ring so that the robot will tilt
                 % to the left backwards. To make it navigate forward or
-                % backwards in this direction use the F or B commands.
+                % backwards in this direction use the FWD or BKW commands.
                 % The direction "forward" is still approximately the same as
-                % before. To continue navigating in the LB direction it is
-                % necessary to use the command B. To understand better,
+                % before. To continue navigating in the TLB direction it is
+                % necessary to use the command BKW. To understand better,
                 % imagine that the robot is a car and you are moving backwards,
                 % even if you move slightly to the right or left, the general
                 % perception of what is backwards and what is forward does not
                 % change.
-
+                
                 if (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
                     % currentFace is the face where I'm at now
                     currentFace=M(i,j);
                     % find term that is going to be used to find new ring
-                     if dir == 1 
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     elseif dir == 0
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     end
+                    if dir==1
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    elseif dir ==0
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    end
                     %reducedMat= matRedux(M,faceMat,i,j);
                     [newi,newj]=smallTurnBKW(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
-
+                    
                 elseif (mod(M(i,j),2)~=0 && dir==0) || (mod(M(i,j),2)==0 && dir==1)
                     currentFace=M(i,j);
-                    if dir == 1 
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     elseif dir == 0
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     end
+                    if dir==1
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    elseif dir ==0
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    end
                     [newi,newj]=bigTurnBKW(M,currentFace,compareTerm,dir);
                     newDir=changeDir(dir);
                 end
                 innerLoop = 0;
-            case 'RB'
+            case 'rb'
                 % This option allows to change ring so that the robot will tilt
                 % to the right backwards.
-
+                
                 if (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
                     currentFace=M(i,j);
-                    if dir == 0 
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     elseif dir == 1
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     end
+                    if dir==0
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    end
                     [newi,newj]=bigTurnBKW(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
-                elseif (mod(M(i,j),2)~=0 && dir==1) || (mod(M(i,j),2)==0 && dir==0)
+                elseif (mod(M(i,j),2)~=0 && dir==0) || (mod(M(i,j),2)==0 && dir==1)
                     currentFace=M(i,j);
-                     if dir==0 
-                         compareTerm = M(i,backwards(j,COLUMNS));
-                     elseif dir ==1
-                         compareTerm = M(i,forward(j,COLUMNS));
-                     end
+                    if dir==0
+                        compareTerm = M(i,matrixStepRight(j,COLUMNS));
+                    elseif dir ==1
+                        compareTerm = M(i,matrixStepLeft(j,COLUMNS));
+                    end
                     [newi,newj]=smallTurnBKW(M,currentFace,compareTerm,dir);
                     newDir = changeDir(dir);
                 end
@@ -220,10 +220,12 @@ while (1)
                 disp(['Desired Face: ' num2str(M(newi,newj))]);
                 currFace = DetectCurrentFace(Group);
                 if (M(newi,newj) ~= currFace)
-                    reset = input('Desired and deteced faces do not match
-                innerLoop = 1;
+                    reset = input('Desired and deteced faces do not match');
+                    innerLoop = 1;
+                end
             otherwise
                 fprintf('Wrong command');
+                innerLoop = 1;
         end
     end
     
