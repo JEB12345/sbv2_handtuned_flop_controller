@@ -67,9 +67,13 @@ quit = 0;
 
 while (1)
     while innerLoop
-        disp(['Desired Face: ' num2str(M(newi,newj))]);
+        disp(['Desired Face: ' num2str(M(i,j))]);
         currFace = DetectCurrentFace(Group);
-        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face','s');
+        if (M(i,j) ~= currFace)
+            j = find(M(i,:)' == currFace);
+            disp('Fixed current face');
+        end
+        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face\n','s');
         switch lower(cmd)
             case 'f'
                 if dir== 0
@@ -231,6 +235,7 @@ while (1)
                         end
                         % Get's the column of the current face
                         j = find(M(i,:)' == currFace);
+                        dir = 1;
                         innerLoop = 1; 
                     else
                         quit = 1;
@@ -276,7 +281,7 @@ while (1)
         Cmd.position(j) = motorOffset;
         Group.send(Cmd);
     end
-    
+    innerLoop = 1;
 %     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);
     i=newi;
     j=newj;
