@@ -47,6 +47,15 @@ COLUMNS = size(M,2);
 % 1 ++
 dir = 1;
 
+%%Initialize matrix with number of motors for each face
+MotorsMatrix =[   5   10  19; 
+                  4   15  22;
+                  3   13  18;
+                  6   12  23;
+                  2   11  21;
+                  7   14  20;
+                  8   16  24;
+                  1   9   17];
 %% Face init
 %% Random definition for initial loop!
 currFace = DetectCurrentFace(Group);
@@ -77,6 +86,26 @@ while (1)
             j = find(M(i,:)' == currFace);
             disp('Fixed current face');
         end
+        %Color motors of next step forward face
+        %LedColors = matrix with the RGB combination for each motor
+        LedColors = zeros(24,3);
+        %Set all leds to green
+        LedColors(:,2)=1;
+        %Figure out which face would be the forward face
+        if dir== 0
+            colorj= matrixStepLeft(j,COLUMNS); %iterate one step left int the matris
+        elseif dir ==1
+            colorj=matrixStepRight(j,COLUMNS); %iterate one step right in the matrix
+        end
+        %Set Led color as BLUE for the forward face
+        LedColors(MotorsMatrix(M(i,colorj),1),:)=[0 0 1];
+        LedColors(MotorsMatrix(M(i,colorj),2),:)=[0 0 1];
+        LedColors(MotorsMatrix(M(i,colorj),3),:)=[0 0 1];
+        %Send LED command to group of motors (TODO- test this to figure out
+        %if this command format works of need a for loop for each motor
+        Group.send('led',LedColors);
+        
+        %%BEGIN CONTROLLER
         disp('Use joystick to move robot');
         joyInput=false;
         %Wait for joystick Input
@@ -311,7 +340,8 @@ while (1)
         Group.send(Cmd);
     end
     innerLoop = 1;
-%     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);
+%     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);   
+    
     i=newi;
     j=newj;
     dir=newDir;
