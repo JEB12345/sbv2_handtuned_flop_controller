@@ -110,22 +110,22 @@ while (1)
         joyInput=false;
         %Wait for joystick Input
         while ~joyInput
-            if axis(joy,5)==-1 && axis(joy,4)~=1 && axis(joy,4)~=-1
+            if axis(joy,2)==-1 && axis(joy,1)>-0.1 && axis(joy,1)<0.1 
                 cmd='f';
                 joyInput =true;
-            elseif axis(joy,5)==1 && axis(joy,4)~=1 && axis(joy,4)~=-1
+            elseif axis(joy,2)==1 && axis(joy,1)>-0.1 && axis(joy,1)<0.1
                 cmd='b';
                 joyInput =true;
-            elseif axis(joy,5)==1 && axis(joy,4)==1
+            elseif axis(joy,1)==1 && axis(joy,2)==1
                 cmd= 'rb';
                 joyInput=true;
-            elseif axis(joy,5)==-1 && axis(joy,4)==-1
+            elseif axis(joy,1)==-1 && axis(joy,2)==-1
                 cmd= 'lf';
                 joyInput=true;
-            elseif axis(joy,5)==-1 && axis(joy,4)==1
+            elseif axis(joy,1)==1 && axis(joy,2)==-1
                 cmd= 'rf';
                 joyInput=true;
-             elseif axis(joy,5)==1 && axis(joy,4)==-1
+             elseif axis(joy,1)==-1 && axis(joy,2)==1
                 cmd= 'lb';
                 joyInput=true;
             else
