@@ -1,5 +1,9 @@
 %% Add path of shared face detection functions
-addpath('../');
+%% NEED TO ADD hebiJoystick to this folder! (https://github.com/HebiRobotics/MatlabInput/releases)
+addpath ../ hebiJoystick/ hebiJoystick/lib/
+
+%% Load HebiJoystick Libraries
+HebiJoystick.loadLibs();
 
 %% Run CollectSBdata.m first to collect training data.
 
@@ -69,7 +73,7 @@ j = find(M(i,:)' == currFace);
 
 %create joystick controller
 id=1;
-joy=vrjoystick(id);
+joy=HebiJoystick(id);
 
 % wait to start walk
 disp('Waiting to start walk. Press any key to continue');
@@ -80,30 +84,31 @@ quit = 0;
 
 while (1)
     while innerLoop
-        disp(['Desired Face: ' num2str(M(i,j))]);
-        currFace = DetectCurrentFace(Group);
-        if (M(i,j) ~= currFace)
-            j = find(M(i,:)' == currFace);
-            disp('Fixed current face');
-        end
-        %Color motors of next step forward face
-        %LedColors = matrix with the RGB combination for each motor
-        LedColors = zeros(24,3);
-        %Set all leds to green
-        LedColors(:,2)=1;
-        %Figure out which face would be the forward face
-        if dir== 0
-            colorj= matrixStepLeft(j,COLUMNS); %iterate one step left int the matris
-        elseif dir ==1
-            colorj=matrixStepRight(j,COLUMNS); %iterate one step right in the matrix
-        end
-        %Set Led color as BLUE for the forward face
-        LedColors(MotorsMatrix(M(i,colorj),1),:)=[0 0 1];
-        LedColors(MotorsMatrix(M(i,colorj),2),:)=[0 0 1];
-        LedColors(MotorsMatrix(M(i,colorj),3),:)=[0 0 1];
-        %Send LED command to group of motors (TODO- test this to figure out
-        %if this command format works of need a for loop for each motor
-        Group.send('led',LedColors);
+        [currFace, j] = background_LED(M,MotorsMatrix,i,j,dir,COLUMNS,Group);
+%         disp(['Desired Face: ' num2str(M(i,j))]);
+%         currFace = DetectCurrentFace(Group);
+%         if (M(i,j) ~= currFace)
+%             j = find(M(i,:)' == currFace);
+%             disp('Fixed current face');
+%         end
+%         %Color motors of next step forward face
+%         %LedColors = matrix with the RGB combination for each motor
+%         LedColors = zeros(24,3);
+%         %Set all leds to green
+%         LedColors(:,2)=1;
+%         %Figure out which face would be the forward face
+%         if dir== 0
+%             colorj= matrixStepLeft(j,COLUMNS); %iterate one step left int the matris
+%         elseif dir ==1
+%             colorj=matrixStepRight(j,COLUMNS); %iterate one step right in the matrix
+%         end
+%         %Set Led color as BLUE for the forward face
+%         LedColors(MotorsMatrix(M(i,colorj),1),:)=[0 0 1];
+%         LedColors(MotorsMatrix(M(i,colorj),2),:)=[0 0 1];
+%         LedColors(MotorsMatrix(M(i,colorj),3),:)=[0 0 1];
+%         %Send LED command to group of motors (TODO- test this to figure out
+%         %if this command format works of need a for loop for each motor
+%         Group.send('led',LedColors);
         
         %%BEGIN CONTROLLER
         disp('Use joystick to move robot');
@@ -330,15 +335,19 @@ while (1)
     % Send new positions to motors
     Cmd.position = cmdMotorPositions;
     Group.send(Cmd);
-    
-    display('Press any key to go to the next step')
-    pause
+%     
+    disp('Press any button to continue.');
+    buttonInput=false;
+    while ~buttonInput
+         if (button(joy,1) == 1 || button(joy,2) == 1 || button(joy,3) == 1 || button(joy,4) == 1)
+             buttonInput = true;
+         end
+    end
     
     % Bring back the robot to the rest position
-    for j=1:24
-        Cmd.position(j) = motorOffset;
-        Group.send(Cmd);
-    end
+    Cmd.position = ones(1,24)*motorOffset;
+    Group.send(Cmd);
+    
     innerLoop = 1;
 %     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);   
     
