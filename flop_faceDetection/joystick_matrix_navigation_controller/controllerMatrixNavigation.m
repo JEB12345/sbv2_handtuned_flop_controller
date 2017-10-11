@@ -1,3 +1,4 @@
+function controllerMatrixNavigation
 %% Add path of shared face detection functions
 %% NEED TO ADD hebiJoystick to this folder! (https://github.com/HebiRobotics/MatlabInput/releases)
 addpath ../ hebiJoystick/ hebiJoystick/lib/
@@ -26,14 +27,14 @@ motorOffset = 1.5;
 
 % Loop Zeros so not to pull too much current went resetting robot
 Cmd.position = ones(1,24)*NaN;
-for j=1:24
-    Cmd.position(j) = motorOffset;
+for k=1:24
+    Cmd.position(k) = motorOffset;
     Group.send(Cmd);
-    disp(j);
+    disp(k);
     pause(0.5);
 end
 
-clear j;
+clear k;
 
 
 %% Initialize matrix with the four rings (one per row)
@@ -62,6 +63,10 @@ MotorsMatrix =[   5   10  19;
                   1   9   17];
 %% Face init
 %% Random definition for initial loop!
+global i;
+global j;
+global currFace;
+
 currFace = DetectCurrentFace(Group);
 if (currFace > 2)
     i = 1;
@@ -82,9 +87,20 @@ pause;
 innerLoop = 1;
 quit = 0;
 
+delT = 0.5;
+
+mytimer = timer('TimerFcn'      ,{@background_LED,M,MotorsMatrix,dir,COLUMNS,Group},...
+                'StartDelay'    ,0              ,...
+                'Period'        ,delT           ,...
+                'Name'          ,'faceDetectionLED'  ,...
+                'ExecutionMode' ,'fixedrate'        );
+
+start(mytimer);
+cleanupObj = onCleanup(@closeTimer);
+
 while (1)
     while innerLoop
-        [currFace, j] = background_LED(M,MotorsMatrix,i,j,dir,COLUMNS,Group);
+        %background_LED(M,MotorsMatrix,dir,COLUMNS,Group);
 %         disp(['Desired Face: ' num2str(M(i,j))]);
 %         currFace = DetectCurrentFace(Group);
 %         if (M(i,j) ~= currFace)
@@ -335,11 +351,15 @@ while (1)
     % Send new positions to motors
     Cmd.position = cmdMotorPositions;
     Group.send(Cmd);
-%     
+    
+    
     disp('Press any button to continue.');
     buttonInput=false;
     while ~buttonInput
          if (button(joy,1) == 1 || button(joy,2) == 1 || button(joy,3) == 1 || button(joy,4) == 1)
+             buttonInput = true;
+         end
+         if (M(newi,newj) == currFace && axis(joy,2) ~= 0)
              buttonInput = true;
          end
     end

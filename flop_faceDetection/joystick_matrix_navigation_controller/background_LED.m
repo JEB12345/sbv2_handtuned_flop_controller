@@ -1,5 +1,9 @@
-function [currFace, j]=background_LED(M,MotorsMatrix,i,j,dir,COLUMNS,Group)
-
+function background_LED(src,evt,M,MotorsMatrix,dir,COLUMNS,Group)
+    
+    global currFace;
+    global i;
+    global j;
+    
     disp(['Desired Face: ' num2str(M(i,j))]);
     currFace = DetectCurrentFace(Group);
     
