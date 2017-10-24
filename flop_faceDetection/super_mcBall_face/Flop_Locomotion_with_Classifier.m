@@ -120,14 +120,6 @@ while notQuit
                     disp('Logging Initiated.');
                     logging = 1;
                 end
-            case 't'
-                disp('Timed Logging Initiated.');
-                tic
-                modules.startLog();
-                while toc<60                   
-                end
-                modules.stopLogFull('LogFormat', 'mat');
-                disp('Timed Logging Terminated.');
             case '0' % Forward
                 inLoop = 0;
                 direction = 0;
