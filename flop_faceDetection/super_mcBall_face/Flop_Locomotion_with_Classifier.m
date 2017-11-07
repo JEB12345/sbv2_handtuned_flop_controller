@@ -45,15 +45,16 @@ hebiStuff;
 
 %% Motor positions and gains for basic flop locomotion
 
+nbMotors = Group.getNumModules;
 motorPosition = 63;
 motorOffset = 1.5;
 
 %% Go to initial position
 
 % Loop Zeros so not to pull too much current went resetting robot
-Cmd.position = ones(1,24)*NaN;
-for j=1:24
-    Cmd.position(j) = motorOffset;
+Cmd.position = ones(1,nbMotors)*NaN;
+for j=1:nbMotors
+    Cmd.position(j) = 0.0; % Offset
     Group.send(Cmd);
     disp(j);
     pause(0.5);
@@ -81,7 +82,8 @@ logging = 0;
 while notQuit
     
     % Set all the motors to the initial state
-    cmdMotorPositions = ones(1,24)*motorOffset;
+    cmdMotorPositions = ones(1,nbMotors)*motorOffset;
+    cmdMotorPositions(1,25) = 0;
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
@@ -170,6 +172,9 @@ while notQuit
             case 'm' % Decrease current offset
                 motorPosition = motorPosition - 0.5;
                 display(['New motor amplitude = ' num2str(motorPosition)]);    
+               
+            case 'z' % Random motor activation
+                MotorRandomActivation(Group, cmdMotorPositions,Cmd);
                 
             case 'r' % reset robot position to offset-only
                 CommandAllMotors(Group, Cmd, motorOffset, 0.5);
