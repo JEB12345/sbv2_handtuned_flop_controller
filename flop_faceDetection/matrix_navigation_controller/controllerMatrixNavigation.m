@@ -16,7 +16,7 @@ hebiStuff;
 %% Motor positions and gains for basic flop locomotion
 
 motorPosition = 63;
-motorOffset = 1.5;
+motorOffset = 1.6;
 
 %% Go to initial position
 
@@ -51,6 +51,7 @@ dir = 1;
 %% Random definition for initial loop!
 currFace = DetectCurrentFace(Group);
 if (currFace > 2)
+    
     i = 1;
 else
     i = 2;
@@ -65,7 +66,9 @@ pause;
 innerLoop = 1;
 quit = 0;
 
-while (1)
+quit = 0;
+logging = 0;
+while (~quit)
     while innerLoop
         disp(['Desired Face: ' num2str(M(i,j))]);
         currFace = DetectCurrentFace(Group);
@@ -75,6 +78,28 @@ while (1)
         end
         cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face\n','s');
         switch lower(cmd)
+            case 'q'
+                if (logging)
+                    modules.stopLogFull('LogFormat', 'mat');
+                    disp('Logging Terminated.');
+                    logging = 0;
+                end
+                quit = 1;
+                innerLoop = 0;
+            case 'l' % log data
+                
+                if (logging)
+                    modules.stopLogFull('LogFormat', 'mat');
+                    disp('Logging Terminated.');
+                    logging = 0;
+                else
+                    modules.startLog();
+                    disp('Logging Initiated.');
+                    logging = 1;
+                end
+                
+                innerLoop = 1;
+                
             case 'f'
                 if dir== 0
                     newDir=dir;
