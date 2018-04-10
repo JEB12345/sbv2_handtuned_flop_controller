@@ -6,10 +6,10 @@ function [ face ] = DetectCurrentFace( Group )
     fbk = Group.getNextFeedback();
     
     % Quick check to verify that all 24 motors are connected!
-    if size(fbk.accelX,2) ~= nbMotors
-        display('Something is wrong with the number of connected motors!')
-        pause()
-    end
+%     if size(fbk.accelX,2) ~= nbMotors
+%         display('Something is wrong with the number of connected motors!')
+%         pause()
+%     end
     
     % Create a new point that needs to be classified
     for mm = 1:nbMotors

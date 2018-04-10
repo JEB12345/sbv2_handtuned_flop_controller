@@ -26,7 +26,7 @@ motorOffset = 1.5;
 %% Go to initial position
 
 % Loop Zeros so not to pull too much current went resetting robot
-Cmd.position = ones(1,24)*NaN;
+Cmd.position = ones(1,25)*NaN;
 for k=1:24
     Cmd.position(k) = motorOffset;
     Group.send(Cmd);
@@ -349,7 +349,7 @@ while (1)
     cmdMotorPositions(motorCommand(5)) = -motorPosition + motorOffset;
     
     % Send new positions to motors
-    Cmd.position = cmdMotorPositions;
+    Cmd.position = [cmdMotorPositions, 0];
     Group.send(Cmd);
     
     

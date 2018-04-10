@@ -43,6 +43,8 @@ transitionsDef;
 
 hebiStuff;
 
+modules.setFeedbackFrequency(1000);
+
 %% Motor positions and gains for basic flop locomotion
 
 motorPosition = 63;
@@ -86,7 +88,7 @@ logging = 0;
 while notQuit
     
     % Set all the motors to the initial state
-    cmdMotorPositions = ones(1,25)*motorOffset;
+    cmdMotorPositions = [ones(1,24)*motorOffset, 0];
     
     % Detect current face
     currFace = DetectCurrentFace(Group);
@@ -226,7 +228,7 @@ while notQuit
     pause
     
     % Bring back the robot to the rest position
-    for j=1:25
+    for j=1:24
         Cmd.position(j) = motorOffset;
         Group.send(Cmd);
     end
@@ -236,7 +238,7 @@ end
 %% Ending sequence. Bring back the robot to the rest position.
 
 disp('Bringing robot back to zero position before quiting.');
-for j=1:25
+for j=1:24
     Cmd.position(j) = motorOffset;
     Group.send(Cmd);
     disp(j);

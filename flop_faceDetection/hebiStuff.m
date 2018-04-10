@@ -2,7 +2,7 @@
 
 if ~(exist('Cmd'))
     if ~(exist('HebiLookup'))
-        addpath('/Users/Massimo/Documents/Hebi_motors');
+        addpath('/usr/local/home/jebruce/Projects/Hebi/MATLAB');
         startup;
         SB_Hebi_start;
     else
