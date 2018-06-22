@@ -13,10 +13,14 @@ transitionsDef;
 
 hebiStuff;
 
+
 %% Motor positions and gains for basic flop locomotion
 
-motorPosition = 63;
+motorPosition = 69; %63
 motorOffset = 1.6;
+hillOffset = 0;
+lowerOffsetMatrix;
+compliantOffsetMatrix;
 
 %% Go to initial position
 
@@ -76,7 +80,9 @@ while (~quit)
             j = find(M(i,:)' == currFace);
             disp('Fixed current face');
         end
-        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face\n','s');
+        
+        disp(['Hill = ' num2str(hillOffset) ' Compliant = ' num2str(enableCompliance)]); %   
+        cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face\nh = hill offset\nj = flat offset\n','s');
         switch lower(cmd)
             case 'q'
                 if (logging)
@@ -99,6 +105,43 @@ while (~quit)
                 end
                 
                 innerLoop = 1;
+              
+            case 'c' % compliant
+                enableCompliance = 1;
+                disp('Soft mode enabled');
+                
+                homing;
+                
+            case 's' % stiff
+                enableCompliance = 0;
+                disp('Soft mode disabled');
+                
+                homing;
+                
+            case 'h' %hill
+                hillOffset = 1;
+                disp('AWD enabled');
+                
+                homing;
+                
+                
+            case 'j' %flat ground (need to find a better letter!
+                hillOffset = 0;
+                disp('Back to flat ground offset');
+                  
+                homing;
+                
+            case 'kct' % keep current torque
+                tmpFeedback = Group.getNextFeedback;
+                Cmd.position = [];
+                Cmd.effort = tmpFeedback.effort;
+                
+                Group.send(Cmd);
+
+                clearvars tmpFeedback;
+                
+                Cmd.effort = [];
+                
                 
             case 'f'
                 if dir== 0
@@ -249,7 +292,7 @@ while (~quit)
             case 'd'
                 disp(['Desired Face: ' num2str(M(newi,newj))]);
                 currFace = DetectCurrentFace(Group);
-                if (M(newi,newj) ~= currFace)
+                if (M(i,j) ~= currFace) %if (M(newi,newj) ~= currFace)
                     reset = input('Desired and deteced faces do not match. Should we reset direction [1] or quit [0]?');
                     if (reset)
                         currFace = DetectCurrentFace(Group);
@@ -281,29 +324,30 @@ while (~quit)
     end
     
     % Set all the motors to the initial state
-    cmdMotorPositions = ones(1,24)*motorOffset;
+    cmdMotorPositions = ones(1,24)*motorOffset+hillOffset*lowerOffset(currFace, :) + enableCompliance*compliantOffset(currFace, :);
     
-    disp(['Curr Face: ' num2str(currFace) ' next face: ' num2str(M(newi,newj))]);
+    nextFace = M(newi,newj);
+    disp(['Curr Face: ' num2str(currFace) ' next face: ' num2str(nextFace)]);
     % Now we can select the motor commands to go to the next face
-    motorCommand = cell2mat(transition(currFace, M(newi,newj)));
+    motorCommand = cell2mat(transition(currFace, nextFace));
     
      % We selected these five cables via trial and error
-    cmdMotorPositions(motorCommand(1)) = motorPosition + motorOffset;
-    cmdMotorPositions(motorCommand(2)) = -motorPosition + motorOffset;
-    cmdMotorPositions(motorCommand(3)) = motorPosition + motorOffset;
-    cmdMotorPositions(motorCommand(4)) = motorPosition + motorOffset;
-    cmdMotorPositions(motorCommand(5)) = -motorPosition + motorOffset;
+    cmdMotorPositions(motorCommand(1)) = motorPosition + motorOffset + hillOffset*lowerOffset(currFace, motorCommand(1)) + enableCompliance*compliantOffset(currFace, motorCommand(1));
+    cmdMotorPositions(motorCommand(2)) = -motorPosition + motorOffset + hillOffset*lowerOffset(currFace, motorCommand(2)) + enableCompliance*compliantOffset(currFace, motorCommand(2));
+    cmdMotorPositions(motorCommand(3)) = motorPosition + motorOffset + hillOffset*lowerOffset(currFace, motorCommand(3)) + enableCompliance*compliantOffset(currFace, motorCommand(3));
+    cmdMotorPositions(motorCommand(4)) = motorPosition + motorOffset + hillOffset*lowerOffset(currFace, motorCommand(4)) + enableCompliance*compliantOffset(currFace, motorCommand(4));
+    cmdMotorPositions(motorCommand(5)) = -motorPosition + motorOffset + hillOffset*lowerOffset(currFace, motorCommand(5)) + enableCompliance*compliantOffset(currFace, motorCommand(5));
     
     % Send new positions to motors
     Cmd.position = cmdMotorPositions;
     Group.send(Cmd);
     
-    display('Press any key to go to the next step')
+    disp('Press any key to go to the next step')
     pause
     
     % Bring back the robot to the rest position
     for j=1:24
-        Cmd.position(j) = motorOffset;
+        Cmd.position(j) = motorOffset+ hillOffset*lowerOffset(nextFace, j) + enableCompliance*compliantOffset(nextFace, j);
         Group.send(Cmd);
     end
     innerLoop = 1;
@@ -311,4 +355,6 @@ while (~quit)
     i=newi;
     j=newj;
     dir=newDir;
+    
+    clearvars nextFace;
 end
