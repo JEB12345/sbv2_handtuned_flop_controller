@@ -15,8 +15,8 @@ hebiStuff;
 
 %% Motor positions and gains for basic flop locomotion
 
-motorPosition = 63;
-motorOffset = 1.6;
+motorPosition = 65;
+motorOffset = 1.8;
 
 %% Go to initial position
 

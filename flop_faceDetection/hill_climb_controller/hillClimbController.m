@@ -19,6 +19,7 @@ hebiStuff;
 motorPosition = 69; %63
 motorOffset = 1.6;
 hillOffset = 0;
+enableCompliance = 0;
 lowerOffsetMatrix;
 compliantOffsetMatrix;
 

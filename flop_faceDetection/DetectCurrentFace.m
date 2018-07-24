@@ -1,13 +1,19 @@
 function [ face ] = DetectCurrentFace( Group )
 
-    load('IMUTrainingData.mat') % Training data
+    if (~exist('trainingData','var'))
+        disp('Training data not loaded!');
+        disp('Please load the training data before calling this function!');
+        disp('Please press CTRL+C and fix this issue.');
+        pause();        
+    end
+    
     
     % Figure out on which face we are standing, using the classifier
     fbk = Group.getNextFeedback();
     
     % Quick check to verify that all 24 motors are connected!
     if size(fbk.accelX,2) ~= nbMotors
-        display('Something is wrong with the number of connected motors!')
+        disp('Something is wrong with the number of connected motors!')
         pause()
     end
     
