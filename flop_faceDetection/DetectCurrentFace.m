@@ -1,12 +1,4 @@
-function [ face ] = DetectCurrentFace( Group )
-
-    if (~exist('trainingData','var'))
-        disp('Training data not loaded!');
-        disp('Please load the training data before calling this function!');
-        disp('Please press CTRL+C and fix this issue.');
-        pause();        
-    end
-    
+function [ face ] = DetectCurrentFace( Group, nbMotors, trainingData, labs )
     
     % Figure out on which face we are standing, using the classifier
     fbk = Group.getNextFeedback();
