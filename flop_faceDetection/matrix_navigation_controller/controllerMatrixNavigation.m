@@ -49,7 +49,7 @@ dir = 1;
 
 %% Face init
 %% Random definition for initial loop!
-currFace = DetectCurrentFace(Group);
+currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
 if (currFace > 2)
     
     i = 1;
@@ -71,7 +71,7 @@ logging = 0;
 while (~quit)
     while innerLoop
         disp(['Desired Face: ' num2str(M(i,j))]);
-        currFace = DetectCurrentFace(Group);
+        currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
         if (M(i,j) ~= currFace)
             j = find(M(i,:)' == currFace);
             disp('Fixed current face');
@@ -248,11 +248,11 @@ while (~quit)
                 innerLoop = 0;
             case 'd'
                 disp(['Desired Face: ' num2str(M(newi,newj))]);
-                currFace = DetectCurrentFace(Group);
+                currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
                 if (M(newi,newj) ~= currFace)
                     reset = input('Desired and deteced faces do not match. Should we reset direction [1] or quit [0]?');
                     if (reset)
-                        currFace = DetectCurrentFace(Group);
+                        currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
                         if (currFace > 2)
                             i = 1;
                         else
