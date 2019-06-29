@@ -3,10 +3,9 @@
 % The first value in [ ] is the main actuated cable on the base triangle.
 % The other ones are extra cables that help complete the flop.
 
-
 % Some definitions:
 
-% Triangles     motors
+% Triangles     motors on the base triangle
 
 % Triangle 1:   5   10  19  
 % Triangle 2:   4   15  22
@@ -45,7 +44,6 @@
 %       8                   17              3
 %       8                   1               5
 %       8                   9               1
-
 
 transition = cell(8,8);
 

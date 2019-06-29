@@ -47,7 +47,7 @@ display(nbMotors, ' motor(s) found!');
 
 Group.setFeedbackFrequency(100); % reduce rate to 5Hz from 100 Hz default
 
-display('Press a key to start collecting data!');
+disp('Press a key to start collecting data!');
 pause();
 
 % Samples per triangle
@@ -71,12 +71,12 @@ for jj = 1:nbTriangles
     end
     
     if jj<nbTriangles
-        display('Turn the robot to the next face and press any key to continue...');
+        disp('Turn the robot to the next face and press any key to continue...');
         pause();
     end
 end 
 
-display('End acquisition');
+disp('End acquisition');
 
 
 %% Create labels
@@ -108,7 +108,7 @@ end
 
 %% Save all data
 
-display('Saving Workspace data. Press any key to confirm!')
+disp('Saving Workspace data. Press any key to confirm!')
 pause()
 
 filename = 'IMUTrainingData.mat';

@@ -1,7 +1,9 @@
 %% Add path of shared face detection functions
 addpath('../');
 
-%% Run CollectSBdata.m first to collect training data.
+%% Load training data for the face detection classifier
+% If IMUTrainingData.mat does not exist, or there are changes in the
+% robot configuration, run CollectSBdata.m to collect new training data.
 
 load('IMUTrainingData.mat') % Training data
 
@@ -15,8 +17,8 @@ hebiStuff;
 
 %% Motor positions and gains for basic flop locomotion
 
-motorPosition = 65;
-motorOffset = 1.8;
+motorPosition = 65; %rad
+motorOffset = 1.8; %rad
 
 %% Go to initial position
 
@@ -39,7 +41,7 @@ M = [3    6   7   4   5   8;
      7    2   3   8   1   4;
      1    6   3   2   5   4];
  
-% Initialize random face where I'm at
+% Initialize random face where the robot is at
 COLUMNS = size(M,2); 
 
 % Assume positive direction when starting program
@@ -47,27 +49,29 @@ COLUMNS = size(M,2);
 % 1 ++
 dir = 1;
 
-%% Face init
-%% Random definition for initial loop!
+%% Main control loop
+% "Random" selection of initial loop!
+
 currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
-if (currFace > 2)
-    
-    i = 1;
+
+if (currFace > 2)     
+    i = 1; % Loop 1 is the only one that contains every face with index > 2
 else
-    i = 2;
+    i = 2; % Loop 2 contains faces 1 and 2.
 end
-% Get's the column of the current face
+
+% Get the column containing the current face number
 j = find(M(i,:)' == currFace);
 
 % wait to start walk
 disp('Waiting to start walk. Press any key to continue');
 pause;
 
+% Get user input
 innerLoop = 1;
 quit = 0;
-
-quit = 0;
 logging = 0;
+
 while (~quit)
     while innerLoop
         disp(['Desired Face: ' num2str(M(i,j))]);
@@ -76,9 +80,10 @@ while (~quit)
             j = find(M(i,:)' == currFace);
             disp('Fixed current face');
         end
+        
         cmd = input('Where should I go next?\n F = forward \n B = backwards \n LF = turn left forward\n RF = turn right forward \nLB = turn left backwards\n RB = turn right backwards\nD = display detected face\n','s');
         switch lower(cmd)
-            case 'q'
+            case 'q' % quit program
                 if (logging)
                     modules.stopLogFull('LogFormat', 'mat');
                     disp('Logging Terminated.');
@@ -86,8 +91,8 @@ while (~quit)
                 end
                 quit = 1;
                 innerLoop = 0;
-            case 'l' % log data
                 
+            case 'l' % start/stop data log
                 if (logging)
                     modules.stopLogFull('LogFormat', 'mat');
                     disp('Logging Terminated.');
@@ -100,7 +105,7 @@ while (~quit)
                 
                 innerLoop = 1;
                 
-            case 'f'
+            case 'f' % forward motion
                 if dir== 0
                     newDir=dir;
                     newi=i;
@@ -113,7 +118,8 @@ while (~quit)
                     newFace = M(newi,newj);
                 end
                 innerLoop = 0;
-            case 'b'
+                
+            case 'b' % backward motion
                 if dir == 0
                     newDir=dir;
                     newi=i;
@@ -126,6 +132,7 @@ while (~quit)
                     newFace = M(newi,newj);
                 end
                 innerLoop = 0;
+                
             case 'lf'
                 % This option allows to change ring so that the robot will tilt
                 % to the left forward. To make it navigate forward or
@@ -160,6 +167,7 @@ while (~quit)
                     newDir=changeDir(dir);
                 end
                 innerLoop = 0;
+                
             case 'rf'
                 % This option allows to change ring so that the robot will tilt
                 % to the right forward. To make it navigate forward or
@@ -186,6 +194,7 @@ while (~quit)
                     newDir = changeDir(dir);
                 end
                 innerLoop = 0;
+                
             case 'lb'
                 % This option allows to change ring so that the robot will tilt
                 % to the left backwards. To make it navigate forward or
@@ -222,6 +231,7 @@ while (~quit)
                     newDir=changeDir(dir);
                 end
                 innerLoop = 0;
+                
             case 'rb'
                 % This option allows to change ring so that the robot will tilt
                 % to the right backwards.
@@ -246,7 +256,11 @@ while (~quit)
                     newDir = changeDir(dir);
                 end
                 innerLoop = 0;
-            case 'd'
+                
+            case 'd' % Detect current face
+                % This option can be used if the robot rolls for more than
+                % one step. It will check if the robot is on the correct
+                % face. If not, the user can reset the controller.
                 disp(['Desired Face: ' num2str(M(newi,newj))]);
                 currFace = DetectCurrentFace(Group, nbMotors, trainingData, labs);
                 if (M(newi,newj) ~= currFace)
@@ -287,7 +301,7 @@ while (~quit)
     % Now we can select the motor commands to go to the next face
     motorCommand = cell2mat(transition(currFace, M(newi,newj)));
     
-     % We selected these five cables via trial and error
+    % We selected these five cables via trial and error
     cmdMotorPositions(motorCommand(1)) = motorPosition + motorOffset;
     cmdMotorPositions(motorCommand(2)) = -motorPosition + motorOffset;
     cmdMotorPositions(motorCommand(3)) = motorPosition + motorOffset;
@@ -298,7 +312,7 @@ while (~quit)
     Cmd.position = cmdMotorPositions;
     Group.send(Cmd);
     
-    display('Press any key to go to the next step')
+    disp('Press any key to go to the next step')
     pause
     
     % Bring back the robot to the rest position
@@ -307,8 +321,8 @@ while (~quit)
         Group.send(Cmd);
     end
     innerLoop = 1;
-%     fprintf('command %s\n oldi %d, oldj %d, oldface %d,olddir %d\n newi %d,newj %d, newface %d, newdir %d\n',cmd,i,j,M(i,j),dir,newi,newj,M(newi,newj),newDir);
-    i=newi;
-    j=newj;
-    dir=newDir;
+
+    i = newi;
+    j = newj;
+    dir = newDir;
 end
